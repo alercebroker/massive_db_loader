@@ -164,3 +164,5 @@ cython_debug/
 # Nix
 flake.nix
 flake.lock
+
+parquets/

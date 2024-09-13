@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "massive-db-loader"
+name = "mdbl"
 version = "0.1.0"
 description = ""
-packages = [{ include = "mdbl" }]
+packages = [{ include = "mdbl", from = "src" }]
 authors = ["hectorxh <hectorplj@gmail.com>"]
 readme = "README.md"
 
@@ -15,6 +15,9 @@ mdbl = "mdbl.cli:main"
 python = "^3.12"
 duckdb = "^1.1.0"
 click = "^8.1.7"
+pydantic = "^2.9.1"
+faker = "^28.4.1"
+polars = "^1.7.1"
 
 
 [tool.poetry.group.dev.dependencies]
