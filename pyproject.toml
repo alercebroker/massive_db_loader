@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "massive-db-loader"
+version = "0.1.0"
+description = ""
+packages = [{ include = "mdbl" }]
+authors = ["hectorxh <hectorplj@gmail.com>"]
+readme = "README.md"
+
+
+[tool.poetry.scripts]
+mdbl = "mdbl.cli:main"
+
+
+[tool.poetry.dependencies]
+python = "^3.12"
+duckdb = "^1.1.0"
+click = "^8.1.7"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.4"
+pytest = "^8.3.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
