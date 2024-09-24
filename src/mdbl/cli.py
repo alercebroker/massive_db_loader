@@ -1,3 +1,4 @@
+from typing import BinaryIO
 import click
 import mdbl.mdbl as mdbl
 import duckdb
@@ -21,14 +22,14 @@ def hello_world():
 
 @main.command()
 def sql():
-    with duckdb.connect() as con:
+    with duckdb.connect() as con:  # pyright: ignore[reportUnknownMemberType]
         con.install_extension("postgres")
         con.load_extension("postgres")
-        con.sql(
+        _ = con.sql(
             "ATTACH 'dbname=postgres user=postgres password=postgres host=127.0.0.1' as postgres (TYPE POSTGRES)"
         )
         while True:
-            query = click.prompt("SQL")
+            query: str = click.prompt("SQL")
             try:
                 con.sql(query).show()
             except click.ClickException as e:
@@ -39,5 +40,14 @@ def sql():
 
 
 @main.command()
-def data_load():
-    mdbl.data_load()
+@click.option("--file", "-f", required=True, type=click.File("rb"))
+@click.option(
+    "--file-type",
+    "-t",
+    required=True,
+    type=click.Choice(mdbl.ValidFileTypes.possible_values(), case_sensitive=False),
+)
+def data_load(file: BinaryIO, file_type: str):
+    db_mappings = mdbl.read_mapping(file, mdbl.ValidFileTypes(file_type))
+    click.echo(db_mappings)
+    mdbl.data_load(db_mappings)
