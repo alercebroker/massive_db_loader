@@ -6,10 +6,8 @@ packages = [{ include = "mdbl", from = "src" }]
 authors = ["hectorxh <hectorplj@gmail.com>"]
 readme = "README.md"
 
-
 [tool.poetry.scripts]
 mdbl = "mdbl.cli:main"
-
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -20,7 +18,6 @@ faker = "^28.4.1"
 polars = "^1.7.1"
 pyyaml = "^6.0.2"
 
-
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.4"
 pytest = "^8.3.3"
@@ -28,3 +25,7 @@ pytest = "^8.3.3"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+reportAny = false
+reportUnknownMemberType = false

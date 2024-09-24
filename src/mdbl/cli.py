@@ -22,7 +22,7 @@ def hello_world():
 
 @main.command()
 def sql():
-    with duckdb.connect() as con:  # pyright: ignore[reportUnknownMemberType]
+    with duckdb.connect() as con:
         con.install_extension("postgres")
         con.load_extension("postgres")
         _ = con.sql(

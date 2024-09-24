@@ -87,8 +87,8 @@ def read_mapping(file: BinaryIO, file_type: ValidFileTypes) -> DBMappings:
             data = tomllib.load(file)
             return DBMappings(data)
         case ValidFileTypes.YAML:
-            data: object = yaml.safe_load(file)
-            return DBMappings(data.__dict__)
+            data = yaml.safe_load(file)
+            return DBMappings(data)
 
 
 def generate_dummy_parquets(
@@ -140,7 +140,7 @@ def data_load(db_mappings: DBMappings = db_mappings, folder: str = "parquets"):
     """
     generate_dummy_parquets(folder=folder)
 
-    with duckdb.connect() as con:  # pyright: ignore[reportUnknownMemberType]
+    with duckdb.connect() as con:
         con.install_extension("postgres")
         con.load_extension("postgres")
         _ = con.sql(
