@@ -1,0 +1,13 @@
+name: lint
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Run ruff
+        uses: chartboost/ruff-action@v11
