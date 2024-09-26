@@ -1,7 +1,12 @@
-from typing import BinaryIO
+import json
+from typing import BinaryIO, TextIO
+
 import click
-import mdbl.mdbl as mdbl
 import duckdb
+
+import mdbl.mdbl as mdbl
+from mdbl.models.cli import ValidFileTypes
+from mdbl.models.mappings import DBMappings
 
 
 @click.group
@@ -13,11 +18,18 @@ def main():
 
 
 @main.command()
-def hello_world():
+@click.option("-f", "--file", type=click.File("w"))
+@click.option("-i", "--indent", type=int, default=4)
+def schema(file: TextIO | None, indent: int):
     """
-    Prints 'Hello, World!' to the console.
+    Generates a JSON schema describing the format of the mapping file
+    to give better IDE support.
     """
-    click.echo("Hello, World!")
+    json_shema = DBMappings.model_json_schema()
+    if file:
+        file.write(json.dumps(json_shema))
+    else:
+        click.echo(json.dumps(json_shema, indent=indent))
 
 
 @main.command()
@@ -25,7 +37,7 @@ def sql():
     with duckdb.connect() as con:
         con.install_extension("postgres")
         con.load_extension("postgres")
-        _ = con.sql(
+        con.sql(
             "ATTACH 'dbname=postgres user=postgres password=postgres host=127.0.0.1' as postgres (TYPE POSTGRES)"
         )
         while True:
@@ -40,14 +52,13 @@ def sql():
 
 
 @main.command()
-@click.option("--file", "-f", required=True, type=click.File("rb"))
+@click.option("-f", "--file", required=True, type=click.File("rb"))
 @click.option(
-    "--file-type",
     "-t",
+    "--file_type",
     required=True,
-    type=click.Choice(mdbl.ValidFileTypes.possible_values(), case_sensitive=False),
+    type=click.Choice(ValidFileTypes.possible_values(), case_sensitive=False),
 )
 def data_load(file: BinaryIO, file_type: str):
-    db_mappings = mdbl.read_mapping(file, mdbl.ValidFileTypes(file_type))
-    click.echo(db_mappings)
+    db_mappings = mdbl.read_mapping(file, ValidFileTypes(file_type))
     mdbl.data_load(db_mappings)

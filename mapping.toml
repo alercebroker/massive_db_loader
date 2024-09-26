@@ -1,0 +1,29 @@
+#:schema ./mapping_schema.json
+[[tables]]
+from = "object_parquet"
+to = "object"
+[[tables.columns]]
+from = "oid_parquet"
+to = "oid"
+[[tables.columns]]
+from = "firstmjd_parquet"
+to = "firstmjd"
+[[tables.columns]]
+from = "ndet_parquet"
+to = "ndet"
+
+[[tables]]
+from = "detections_parquet"
+to = "detections"
+[[tables.columns]]
+from = "candid_parquet"
+to = "candid"
+[[tables.columns]]
+from = "oid_parquet"
+to = "oid"
+[[tables.columns]]
+from = "mag_parquet"
+to = "mag"
+[[tables.columns]]
+from = "other_parquet"
+to = "blahblah"

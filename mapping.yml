@@ -1,0 +1,21 @@
+tables:
+  - from: object_parquet
+    to: object_parquet
+    columns:
+      - from: oid_parquet
+        to: oid
+      - from: firstmjd_parquet
+        to: firstmjd
+      - from: ndet_parquet
+        to: ndet
+  - from: detections_parquet
+    to: detections
+    columns:
+      - from: candid_parquet
+        to: candid
+      - from: oid_parquet
+        to: oid
+      - from: mag_parquet
+        to: mag
+      - from: "other_parquet"
+        to: "blahblah"
