@@ -1,7 +1,7 @@
 #:schema ./mapping_schema.json
 [[tables]]
-from = "object_parquet"
-to = "object"
+from = "objects_parquet"
+to = "objects"
 [[tables.columns]]
 from = "oid_parquet"
 to = "oid"
@@ -16,14 +16,18 @@ to = "ndet"
 from = "detections_parquet"
 to = "detections"
 [[tables.columns]]
-from = "candid_parquet"
-to = "candid"
-[[tables.columns]]
 from = "oid_parquet"
 to = "oid"
 [[tables.columns]]
 from = "mag_parquet"
 to = "mag"
 [[tables.columns]]
-from = "other_parquet"
-to = "blahblah"
+from = "candid_parquet"
+to = "candid"
+
+[[tables]]
+from = "fake_parquet"
+to = "fake_table"
+[[tables.columns]]
+from = "fake_column_parquet"
+to = "fake_column_db"

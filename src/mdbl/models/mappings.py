@@ -16,23 +16,3 @@ class TableMappings(BaseModel):
 
 class DBMappings(BaseModel):
     tables: list[TableMappings] = []
-
-
-a = {
-    "tables": [
-        {
-            "from": "parquet_obj",
-            "to": "obj",
-            "columns": [{"from": "col_tabla", "to": "col_db"}],
-        },
-        {
-            "from": "parquet_det",
-            "to": "det",
-            "columns": [
-                {"from": "col_tabla", "to": "col_db"},
-                {"from": "col_tabla", "to": "col_db"},
-                {"from": "col_tabla", "to": "col_db"},
-            ],
-        },
-    ]
-}

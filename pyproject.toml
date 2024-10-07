@@ -8,6 +8,7 @@ readme = "README.md"
 
 [tool.poetry.scripts]
 mdbl = "mdbl.cli:main"
+mdbl_dev = "mdbl.cli:dev_utils"
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -17,11 +18,11 @@ pydantic = "^2.9.1"
 faker = "^28.4.1"
 polars = "^1.7.1"
 pyyaml = "^6.0.2"
+psycopg = { extras = ["binary"], version = "^3.2.2" }
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.4"
 pytest = "^8.3.3"
-pre-commit = "^3.8.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -31,3 +32,6 @@ build-backend = "poetry.core.masonry.api"
 reportAny = false
 reportUnknownMemberType = false
 reportUnusedCallResult = false
+
+[tool.ruff]
+target-version = "py312"
