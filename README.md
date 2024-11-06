@@ -1,39 +1,123 @@
-# massive_db_loader
+# Massive DB Loader
 
-Esta es una herramienta que permite cargar un gran volumen de parquets en una base de datos PostgreSQL **nueva? existente?**.
-Durante el proceso de carga se pueden definir mappings de columnas del schema del parquet al schema de la base de datos objetivo mediante un archivo de config.
+Esta es una herramienta que permite cargar un gran volumen de datos a partir de
+parquets a tablas en una base de datos PostgreSQL.
+Esta herramienta cuenta con una interfaz mediante CLI, al igual que una libreria
+para uso programatico.
 
-Esta herramienta cuenta con una interfaz mediante CLI, al igual que una libreria para uso programatico.
+Las tablas a las que se le cargaran datos deben existir anteriormente en la base
+de datos.
 
-## Mappings
+## Instalacion
 
-> [!WARNING]
-> Esta seccion se encuentra WIP
+Para instalar la herramienta basta con ejecutar:
 
-Se planea soportar mappings en TOML o YAML.
+```bash
+poetry install
+```
+
+## Ejecucion
+
+El programa puede ser ejecutado con el siguiente commando:
+
+```bash
+poetry run mdbl data-load --parquets <parquets_folder> --mapping <mappings.toml>
+```
+
+### parquets
+
+La flag `--parquets` recibe la direccion a la carpeta base en donde se encuentran
+los parquets, estos deben a su vez encontrarse en sub carpetas (el nombre de estas
+es el que se utiliza en los mappings).
+
+Un ejemplo de `parquets_folder` puede ser el siguiente:
+
+- `/parquets`
+  - `/parquet1`
+    - `01.parquet`
+    - `02.parquet`
+    - `03.parquet`
+  - `/parquet2`
+    - `a.parquet`
+    - `b.parquet`
+    - `c.parquet`
+
+
+el nombre de los archivos dentre de las sub carpetas no es importante.
+
+Esta flag es opcional y por defecto se busca en el directorio `./parquets`.
+
+### mapping
+
+La flag `--mapping` recibe un archivo de mappings el cual puede ser un archivo 
+`TOML` o `YAML` que indica los mappings. Este campo es obligatorio.
+
+Ejemplo de formato de archivo de mappings:
+
 ```TOML
 # TOML
-[nombre_tabla]
-stage = 0
-[tabla.mappings]
-columna1 = { column = "columna_parquet3", type="int" }
-columna2 = { column = "columna_parquet4", type="int" }
+[[tables]]
+from = "parquet1"
+to = "table1"
+[[tables.columns]]
+from = "column_in_parquet_1"
+to = "column_in_table_1"
+[[tables.columns]]
+from = "column_in_parquet_2"
+to = "column_in_table_2"
+
+[[tables]]
+from = "parquet2"
+to = "table2"
+[[tables.columns]]
+from = "column_in_parquet_1"
+to = "column_in_table1"
 ```
+
 ```YAML
 # YAML
-nombre_tabla:
-    stage: 0
-    mappings:
-        columna1:
-            column: "columna_parquet3"
-            type: "int"
-        columna2:
-            column: "columna_parquet4"
-            type: "int"
+tables:
+    - from: parquet1
+      to: table1
+      columns:
+        - from: column_in_parquet_1
+          to: column_in_table_1
+        - from: column_in_parquet_2
+          to: column_in_table_2
+    - from: parquet2
+      to: table2
+      columns:
+        - from: column_in_parquet_1
+          to: column_in_table_1
 ```
-(stage en este caso seria el orden en que se deben ejecutar las cargas)
 
-## Detalles de implementacion
+> [!WARNING]
+> El orden en el que se listan las tablas corresponde al orden en que se ejecutaran
+> las inserciones. Esto se debe tener en consideracion a la hora de tratar con llaves
+> primarias y foraneas.
 
-Esta herramienta estara escrita en Python, utilizando la libreria Click para ofrecer su CLI.
-Utilizaremos duckdb para ejecutar SQL en las bases de datos directamente, sin utilizar un ORM de por medio.
+### Configuracion DB
+
+Para conectarse a la base de datos el programa lee las siguientes variables de entorno
+como configuracion:
+
+```bash
+DB_NAME="postgres"
+DB_USER="postgres"
+DB_HOST="localhost"
+DB_PORT="5432"
+DB_PASS="postgres"
+```
+
+Ademas es posible configurar estas variables directamente al llamar la aplicacion
+de la siguiente forma.
+
+```bash
+poetry run mdbl \
+  --db-name postgres \
+  --db-user postgres \
+  --db-host localhost \
+  --db-port 5432 \
+  --db-pass postgres \
+  data-load --mapping mapping.yaml
+```

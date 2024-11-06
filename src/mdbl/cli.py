@@ -3,20 +3,18 @@ from typing import Any, BinaryIO, TextIO
 
 import click
 import duckdb
-import psycopg
 
 import mdbl.mdbl as mdbl
-from mdbl import utils
 from mdbl.models.cli import ValidFileTypes
 from mdbl.models.mappings import DBMappings
 
 
 @click.group
-@click.option("--db-name", required=True, type=str, envvar="MDBL_DB_NAME")
-@click.option("--db-user", required=True, type=str, envvar="MDBL_DB_USER")
-@click.option("--db-host", required=True, type=str, envvar="MDBL_DB_HOST")
-@click.option("--db-port", required=True, type=int, envvar="MDBL_DB_PORT")
-@click.option("--db-pass", required=True, type=str, envvar="MDBL_DB_PASS")
+@click.option("--db-name", required=True, type=str, envvar="DB_NAME")
+@click.option("--db-user", required=True, type=str, envvar="DB_USER")
+@click.option("--db-host", required=True, type=str, envvar="DB_HOST")
+@click.option("--db-port", required=True, type=int, envvar="DB_PORT")
+@click.option("--db-pass", required=True, type=str, envvar="DB_PASS")
 @click.pass_context
 def main(
     ctx: click.Context,
@@ -27,7 +25,8 @@ def main(
     db_pass: str,
 ):
     """
-    Main Group
+    MDBL:
+    Application to load large parquet files into a DB.
     """
     con = duckdb.connect()
     con.install_extension("postgres")
@@ -74,6 +73,9 @@ def data_load(
     mapping: BinaryIO,
     file_type: str,
 ):
+    """
+    Loads the parquets into the database applying the especified mappings.
+    """
     con: duckdb.DuckDBPyConnection = obj["con"]
     db_mappings = mdbl.read_mapping(mapping, ValidFileTypes(file_type))
     try:
@@ -87,38 +89,3 @@ def data_load(
             click.echo(f"\t> {e}")
     finally:
         con.close()
-
-
-@click.group
-def dev_utils():
-    pass
-
-
-@dev_utils.command()
-def generate_dummy_data():
-    utils.generate_dummy_parquets()
-
-
-@dev_utils.command()
-def recreate_tables():
-    with psycopg.connect(
-        "dbname=postgres user=postgres password=postgres host=127.0.0.1"
-    ) as con:
-        with con.cursor() as cur:
-            cur.execute("""
-            DROP TABLE IF EXISTS objects CASCADE;
-            CREATE TABLE objects (
-                oid VARCHAR(255) PRIMARY KEY,
-                firstmjd VARCHAR(255),
-                ndet VARCHAR(255)
-            )
-            """)
-
-            cur.execute("""
-            DROP TABLE IF EXISTS detections CASCADE;
-            CREATE TABLE detections (
-                candid VARCHAR(255) PRIMARY KEY,
-                oid VARCHAR(255) REFERENCES objects(oid),
-                mag VARCHAR(255)
-            )
-            """)

@@ -32,6 +32,7 @@ build-backend = "poetry.core.masonry.api"
 reportAny = false
 reportUnknownMemberType = false
 reportUnusedCallResult = false
+typeCheckingMode = "standard"
 
 [tool.ruff]
 target-version = "py312"
