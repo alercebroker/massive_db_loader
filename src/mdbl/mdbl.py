@@ -134,7 +134,7 @@ def data_load(
     """
     for table in db_mappings.tables:
         aliases = ", ".join(
-            [f"{column.from_} as {column.to}" for column in table.columns]
+            [f'"{column.from_}" as "{column.to}"' for column in table.columns]
         )
         query = f"SELECT {aliases} FROM read_parquet('{os.path.join(folder, table.from_, '*')}')"
         con.sql(query).show()
