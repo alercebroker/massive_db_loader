@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-# Using `from_` because `from` is a reserved keyword
+# Using `from_` because `from` is a reserved keyword, same with schema_
 
 
 class ColumnMapping(BaseModel):

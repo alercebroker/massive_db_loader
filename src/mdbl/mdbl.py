@@ -1,8 +1,8 @@
 import os
-from typing import BinaryIO
+import tomllib
+from typing import Any, BinaryIO
 
 import duckdb
-import tomllib
 import yaml
 
 from mdbl.models.cli import ValidFileTypes
@@ -10,20 +10,21 @@ from mdbl.models.mappings import DBMappings
 
 
 def read_mapping(file: BinaryIO, file_type: ValidFileTypes) -> DBMappings:
+    data: dict[str, Any] = {}
     match file_type:
         case ValidFileTypes.TOML:
             data = tomllib.load(file)
-            return DBMappings.model_validate(data)
         case ValidFileTypes.YAML:
             data = yaml.safe_load(file)
-            return DBMappings.model_validate(data)
+
+    mapping = DBMappings.model_validate(data)
+    for table in mapping.tables:
+        if "." not in table.to:
+            table.to = f"public.{table.to}"
+    return mapping
 
 
-class MissingColumnError(Exception):
-    pass
-
-
-class MissingTableError(Exception):
+class MDBLError(Exception):
     pass
 
 
@@ -33,8 +34,12 @@ def check_missing_elements(
     if not os.path.isdir(folder):
         raise IOError(f"Folder '{folder}' does not exist.")
 
-    db_tables = con.execute("SELECT name FROM (SHOW TABLES);").fetchall()
-    db_tables = set(map(lambda row: row[0], db_tables))
+    mapping_tables = {table.to for table in db_mappings.tables}
+
+    db_tables = con.execute("SELECT schema, name FROM (SHOW ALL TABLES);").fetchall()
+    db_tables = set(map(lambda row: f"{row[0]}.{row[1]}", db_tables)).intersection(
+        mapping_tables
+    )
 
     db_columns = {}
     for table in db_tables:
@@ -43,21 +48,19 @@ def check_missing_elements(
         ).fetchall()
         db_columns[table] = set(map(lambda row: row[0], table_columns))
 
-    exceptions: list[MissingColumnError | MissingTableError] = []
+    exceptions: list[MDBLError] = []
 
     # Check for missing fields on db
     for table_mapping in db_mappings.tables:
         if table_mapping.to not in db_tables:
             exceptions.append(
-                MissingTableError(
-                    f"Table '{table_mapping.to}' does not exist in database."
-                )
+                MDBLError(f"Table '{table_mapping.to}' does not exist in database.")
             )
             continue
         for column_mapping in table_mapping.columns:
             if column_mapping.to not in db_columns[table_mapping.to]:
                 exceptions.append(
-                    MissingColumnError(
+                    MDBLError(
                         f"Column '{column_mapping.to}' does not exist in table '{table_mapping.to}' in the database"
                     )
                 )
@@ -67,8 +70,8 @@ def check_missing_elements(
         parquet_path = os.path.join(folder, table_mappings.from_)
         if not os.path.isdir(parquet_path):
             exceptions.append(
-                MissingTableError(
-                    f"Parquets '{table_mappings.from_}' not found in '{os.path.join(parquet_path, '*.parquet')}'."
+                MDBLError(
+                    f"Parquets '{table_mappings.from_}' not found in '{os.path.join(parquet_path, '*')}'."
                 )
             )
             continue
@@ -77,15 +80,15 @@ def check_missing_elements(
             f"""
             SELECT column_name
             FROM (
-                SHOW SELECT * FROM read_parquet('{os.path.join(parquet_path, '*.parquet')}')
+                SHOW SELECT * FROM read_parquet('{os.path.join(parquet_path, '*')}')
             );"""
         ).fetchall()
         columns = set(map(lambda row: row[0], columns))
         for column_mapping in table_mappings.columns:
             if column_mapping.from_ not in columns:
                 exceptions.append(
-                    MissingColumnError(
-                        f"Column '{column_mapping.to}' does not exist on parquets '{os.path.join(parquet_path, '*.parquet')}'."
+                    MDBLError(
+                        f"Column '{column_mapping.to}' does not exist on parquets '{os.path.join(parquet_path, '*')}'."
                     )
                 )
 
@@ -133,7 +136,7 @@ def data_load(
         aliases = ", ".join(
             [f"{column.from_} as {column.to}" for column in table.columns]
         )
-        query = f"SELECT {aliases} FROM read_parquet('{os.path.join(folder, table.from_, '*.parquet')}')"
+        query = f"SELECT {aliases} FROM read_parquet('{os.path.join(folder, table.from_, '*')}')"
         con.sql(query).show()
 
         con.sql(f"INSERT INTO {table.to} BY NAME {query}")

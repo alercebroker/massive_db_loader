@@ -91,6 +91,10 @@ tables:
           to: column_in_table_1
 ```
 
+En caso de que una tabla se encuentre dentro de un schema el campo `to` debe
+llenarse como `schema.nombre`. En caso de que un schema no sea indicado se
+asumira como `public`.
+
 > [!WARNING]
 > El orden en el que se listan las tablas corresponde al orden en que se ejecutaran
 > las inserciones. Esto se debe tener en consideracion a la hora de tratar con llaves
